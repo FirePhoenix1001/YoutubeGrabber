@@ -1,6 +1,11 @@
-# main.py
-from GUI import App # 從 GUI.py 檔案匯入 App 類別
+# src/main.py
+import multiprocessing
+import sys
+from GUI import App
 
 if __name__ == "__main__":
-    app = App()     # 建立一個應用程式實體
-    app.mainloop()  # 啟動主迴圈
+    # 打包後的穩定性修正，防止在 Windows 多執行緒/程序出現重複啟動問題
+    multiprocessing.freeze_support()
+    
+    app = App()
+    app.mainloop()

@@ -7,5 +7,6 @@
 3. **配置 FFmpeg (關鍵步驟)**：
    * 本專案依賴 FFmpeg 進行媒體處理。
    * 請自行下載 `ffmpeg.exe` 及 `ffprobe.exe`。
-   * 將它們放入專案根目錄中。
+   * 將它們放入專案根目錄中的tools裡。
 4. **執行程式**：`python src/main.py`
+5. **打包指令**：`pyinstaller --onefile --noconsole --name "YoutubeGrabber" --icon "sunflower.ico" --add-data "sunflower.ico;." --add-data "tools\ffmpeg.exe;." --add-data "tools\ffprobe.exe;." --paths "src" --collect-all yt_dlp src/main.py`

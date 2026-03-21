@@ -1,68 +1,90 @@
-import yt_dlp
 import os
 import sys
+import yt_dlp
 
 def get_tool_path(filename):
-    if getattr(sys, 'frozen', False):
-        base_path = sys._MEIPASS
-    else:
-        base_path = os.path.dirname(os.path.abspath(__file__))
-    return os.path.join(base_path, filename)
+    """
+    採用 BASE_PATH 邏輯：檢查順序為 根目錄 -> tools 資料夾
+    """
+    IS_BUNDLE = hasattr(sys, '_MEIPASS')
+    BASE_PATH = sys._MEIPASS if IS_BUNDLE else os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
+    
+    # 檢查位置清單
+    search_paths = [
+        BASE_PATH,
+        os.path.join(BASE_PATH, "tools"),
+        os.path.join(BASE_PATH, "src")
+    ]
+    
+    for d in search_paths:
+        path = os.path.join(d, filename)
+        if os.path.exists(path):
+            return path
+    return os.path.join(BASE_PATH, filename)
 
 FFMPEG_PATH = get_tool_path('ffmpeg.exe')
+
+# ★ 新增：建立一個安靜的 Logger，防止系統訊息亂噴
+class MyLogger:
+    def debug(self, msg): pass
+    def warning(self, msg): pass
+    def error(self, msg): 
+        print(f"核心報錯: {msg}") # 只留錯誤訊息
 
 def download_video(url, mode, progress_callback=None):
     ffmpeg_dir = os.path.dirname(FFMPEG_PATH)
     
     def progress_hook(d):
         if d['status'] == 'downloading':
-            p_str = d.get('_percent_str', '0%').replace('%', '')
             try:
-                progress = float(p_str) / 100
+                p_str = d.get('_percent_str', '0%').replace('%', '')
                 if progress_callback:
-                    progress_callback(progress)
+                    progress_callback(float(p_str) / 100)
             except:
                 pass
         elif d['status'] == 'finished':
             if progress_callback:
                 progress_callback(1.0)
-            print(f"\n下載完成: {d.get('filename', 'unknown')}")
+            print(f"\n檔案處理中: {d.get('filename', 'unknown')}")
 
-    # 基礎設定
+    # ★ 這裡這兩行能大幅降低 403 報錯率
     ydl_opts = {
         "ffmpeg_location": ffmpeg_dir,
-        "ignoreerrors": True,
         "progress_hooks": [progress_hook],
-        "noprogress": True,
+        "logger": MyLogger(),           # ★ 套用安靜 Logger
         "quiet": True,
         "no_warnings": True,
-        # ★ 新增：強制覆蓋同名檔案 (避免因為檔案已存在而跳過)
+        "nocheckcertificate": True,
+        "referer": "https://www.youtube.com/",
+        "remote_components": ["ejs:github"], # 實現核心腳本自動更新
+        "extractor_args": {
+            "youtube": {
+                "player_client": ["default", "-android_sdkless"]
+            }
+        },
         "overwrites": True, 
     }
 
-    # ★ 根據模式設定「檔名」與「格式」
     if mode == "1": # 僅影像
-        # 檔名加上 _video
         ydl_opts["outtmpl"] = "./%(title)s_video.%(ext)s"
         ydl_opts["format"] = "bestvideo"
-        
     elif mode == "2": # 僅聲音
-        # 檔名加上 _audio
         ydl_opts["outtmpl"] = "./%(title)s_audio.%(ext)s"
         ydl_opts["format"] = "bestaudio/best"
-        # ★ 特效藥：針對聲音模式，強制轉檔為 mp3
         ydl_opts["postprocessors"] = [{
             'key': 'FFmpegExtractAudio',
             'preferredcodec': 'mp3',
             'preferredquality': '192',
         }]
-        
     elif mode == "3": # 合併
-        # 維持原檔名，最乾淨
         ydl_opts["outtmpl"] = "./%(title)s.%(ext)s"
         ydl_opts["format"] = "bestvideo+bestaudio/best"
     
-    print(f"正在連線並解析影片資訊... (模式: {mode})")
+    print(f"解析連結中 (自動核心腳本模式: 開啟)...")
     
     with yt_dlp.YoutubeDL(ydl_opts) as ydl:
-        ydl.download([url])
+        try:
+            ydl.download([url])
+        except Exception as e:
+            print(f"下載失敗: {e}")
+            raise e

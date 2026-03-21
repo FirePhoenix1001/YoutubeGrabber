@@ -53,7 +53,16 @@ def get_tool_path(filename):
     if getattr(sys, 'frozen', False):
         base_path = sys._MEIPASS
     else:
-        base_path = os.path.dirname(os.path.abspath(__file__))
+        # 檢查順序：src -> 根目錄 -> tools 資料夾
+        current_dir = os.path.dirname(os.path.abspath(__file__))
+        parent_dir = os.path.dirname(current_dir)
+        tools_dir = os.path.join(parent_dir, "tools")
+
+        for d in [current_dir, parent_dir, tools_dir]:
+            path = os.path.join(d, filename)
+            if os.path.exists(path):
+                return path
+        base_path = current_dir
     return os.path.join(base_path, filename)
 
 FFMPEG_PATH = get_tool_path('ffmpeg.exe')
@@ -280,8 +289,10 @@ class App(ctk.CTk):
             print("下載任務結束。")
             messagebox.showinfo("成功", "下載完成！")
         except Exception as e:
-            print(f"錯誤: {e}")
-            messagebox.showerror("錯誤", str(e))
+            # 簡化錯誤訊息，對一般使用者更友善
+            print(f"詳細錯誤資訊: {e}")
+            msg = "下載失敗！\n\n可能原因：\n1. 影片網址錯誤\n2. 影片受限制(如私人影片)\n3. 網路連線不穩定\n\n系統已嘗試自動更新組件，請再試一次。"
+            messagebox.showerror("下載發生問題", msg)
 
     def update_progress(self, val):
         self.progressbar.set(val)
