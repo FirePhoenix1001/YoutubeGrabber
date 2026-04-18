@@ -6,6 +6,7 @@ import subprocess
 import threading
 import youtubeDownload
 import mediaCut
+from audioProcessor import AudioProcessor
 
 # ==========================================
 #           🎨 主題與字體設定
@@ -53,16 +54,20 @@ def get_tool_path(filename):
     if getattr(sys, 'frozen', False):
         base_path = sys._MEIPASS
     else:
-        # 檢查順序：src -> 根目錄 -> tools 資料夾
-        current_dir = os.path.dirname(os.path.abspath(__file__))
-        parent_dir = os.path.dirname(current_dir)
-        tools_dir = os.path.join(parent_dir, "tools")
+        base_path = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
 
-        for d in [current_dir, parent_dir, tools_dir]:
-            path = os.path.join(d, filename)
-            if os.path.exists(path):
-                return path
-        base_path = current_dir
+    # 檢查順序：根目錄 -> tools -> src
+    search_paths = [
+        base_path,
+        os.path.join(base_path, "tools"),
+        os.path.join(base_path, "src")
+    ]
+
+    for d in search_paths:
+        path = os.path.join(d, filename)
+        if os.path.exists(path):
+            return path
+            
     return os.path.join(base_path, filename)
 
 FFMPEG_PATH = get_tool_path('ffmpeg.exe')
@@ -107,7 +112,9 @@ class App(ctk.CTk):
         # ★★★ 結束新增 ★★★
 
         self.selected_file_path = ""
+        self.transcribe_file_path = ""
         self.last_output_path = ""
+        self.audio_processor = AudioProcessor()
         self.create_widgets()
         
         self.logger = PrintLogger(self.log_box)
@@ -134,9 +141,11 @@ class App(ctk.CTk):
 
         self.tab_down = self.tabview.add("下載 YouTube")
         self.tab_cut = self.tabview.add("本地剪輯")
+        self.tab_transcribe = self.tabview.add("語音辨識")
 
         self.setup_download_tab()
         self.setup_cut_tab()
+        self.setup_transcribe_tab()
 
         # 2. 中間：進度條區
         self.progress_frame = ctk.CTkFrame(self, fg_color="transparent")
@@ -245,6 +254,48 @@ class App(ctk.CTk):
         self.btn_preview_result = ctk.CTkButton(res_frame, text="播放結果", state="disabled", width=100, command=self.play_cut_result,
                                                 fg_color=THEME["yellow"], hover_color=THEME["yellow_dark"], text_color=THEME["text_on_yellow"], font=FONTS["main"])
         self.btn_preview_result.pack(side="right", padx=2)
+
+    def setup_transcribe_tab(self):
+        frame = self.tab_transcribe
+        
+        info_lbl = ctk.CTkLabel(frame, text="將音訊/影片轉換為繁體中文字幕", font=FONTS["bold"], text_color=THEME["brown"])
+        info_lbl.pack(pady=(10, 5))
+
+        file_frame = ctk.CTkFrame(frame, fg_color="transparent")
+        file_frame.pack(fill="x", padx=20, pady=10)
+
+        ctk.CTkButton(file_frame, text="📂 選擇音檔/影片...", width=140, command=self.on_select_transcribe_file, font=FONTS["main"],
+                      fg_color=THEME["brown"], hover_color=THEME["brown_dark"], text_color=THEME["text_white"]).pack(side="left", padx=10)
+
+        self.lbl_transcribe_filename = ctk.CTkLabel(file_frame, text="尚未選擇", text_color=THEME["yellow_dark"], anchor="w", font=FONTS["main"])
+        self.lbl_transcribe_filename.pack(side="left", padx=10, fill="x", expand=True)
+
+        # 模型選擇 (可以擴充)
+        self.model_var = ctk.StringVar(value="large-v3")
+        model_frame = ctk.CTkFrame(frame, fg_color="transparent")
+        model_frame.pack(pady=5)
+        ctk.CTkLabel(model_frame, text="模型大小:", font=FONTS["main"], text_color=THEME["brown"]).pack(side="left", padx=5)
+        ctk.CTkOptionMenu(model_frame, values=["tiny", "base", "small", "medium", "large-v3"], 
+                          variable=self.model_var, fg_color=THEME["brown"], button_color=THEME["brown_dark"],
+                          button_hover_color=THEME["brown_dark"], dropdown_fg_color="white", dropdown_text_color="black").pack(side="left", padx=5)
+
+        # 時間戳記切換
+        self.show_time_var = ctk.BooleanVar(value=True)
+        self.cb_show_time = ctk.CTkCheckBox(frame, text="在輸出中顯示時間戳記", variable=self.show_time_var,
+                                           font=FONTS["main"], text_color=THEME["brown"],
+                                           fg_color=THEME["yellow"], hover_color=THEME["yellow_dark"])
+        self.cb_show_time.pack(pady=5)
+
+        ctk.CTkButton(frame, text="🎤 開始文字辨識", command=self.start_transcribe_thread, height=40, font=FONTS["bold"],
+                      fg_color=THEME["yellow"], hover_color=THEME["yellow_dark"],
+                      text_color=THEME["text_on_yellow"]).pack(fill="x", padx=20, pady=15)
+
+        res_frame = ctk.CTkFrame(frame, fg_color="transparent")
+        res_frame.pack(fill="x", padx=20)
+        
+        self.btn_open_txt = ctk.CTkButton(res_frame, text="📂 打開辨識結果 (.txt)", state="disabled", command=self.open_transcribe_result,
+                                          fg_color=THEME["brown"], hover_color=THEME["brown_dark"], text_color=THEME["text_white"], font=FONTS["main"])
+        self.btn_open_txt.pack(fill="x", expand=True)
 
     def create_time_entry(self, parent, default_val):
         # ★ 時間輸入框使用 Time 字體 (Arial Bold)
@@ -358,6 +409,50 @@ class App(ctk.CTk):
 
     def get_time_string(self, h, m, s):
         return f"{int(h.get() or 0):02d}:{int(m.get() or 0):02d}:{int(s.get() or 0):02d}"
+
+    def on_select_transcribe_file(self):
+        path = filedialog.askopenfilename(filetypes=[("Media Files", "*.mp3 *.wav *.m4a *.mp4 *.mkv *.webm *.mov *.avi")])
+        if path:
+            self.transcribe_file_path = path
+            self.lbl_transcribe_filename.configure(text=os.path.basename(path))
+            self.btn_open_txt.configure(state="disabled")
+            print(f"已選擇辨識檔案: {path}")
+
+    def start_transcribe_thread(self):
+        if not self.transcribe_file_path:
+            messagebox.showwarning("提示", "請先選擇要辨識的檔案！")
+            return
+        
+        self.progressbar.set(0)
+        output_path = os.path.splitext(self.transcribe_file_path)[0] + "_辨識結果.txt"
+        self.last_txt_path = output_path
+        
+        print(f"開始辨識任務，模型: {self.model_var.get()}")
+        threading.Thread(target=self.run_transcribe, args=(output_path,), daemon=True).start()
+
+    def run_transcribe(self, output_path):
+        try:
+            # 更新模型大小 (如果有更動)
+            self.audio_processor.model_size = self.model_var.get()
+            
+            self.audio_processor.transcribe(
+                self.transcribe_file_path, 
+                output_file=output_path, 
+                progress_callback=self.update_progress,
+                show_timestamps=self.show_time_var.get()
+            )
+            
+            self.progressbar.set(1)
+            self.btn_open_txt.configure(state="normal")
+            print(f"辨識任務完成！檔案儲存於: {output_path}")
+            messagebox.showinfo("成功", "語音辨識完成！")
+        except Exception as e:
+            print(f"辨識出錯: {e}")
+            messagebox.showerror("失敗", f"辨識過程發生錯誤:\n{str(e)}")
+
+    def open_transcribe_result(self):
+        if hasattr(self, 'last_txt_path') and os.path.exists(self.last_txt_path):
+            os.startfile(self.last_txt_path)
 
 if __name__ == "__main__":
     app = App()

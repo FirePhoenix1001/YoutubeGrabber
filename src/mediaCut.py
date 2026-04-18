@@ -4,16 +4,23 @@ import subprocess
 
 # 1. 為了讓剪輯功能也能獨立運作，我們同樣需要這個路徑偵測函式
 def get_ffmpeg_path():
-    """
-    智慧判斷 FFmpeg 路徑：
-    1. 打包後 (exe)：會去暫存資料夾 sys._MEIPASS 找
-    2. 開發中 (py) ：會去目前的檔案資料夾找
-    """
     if getattr(sys, 'frozen', False):
         base_path = sys._MEIPASS
     else:
-        base_path = os.path.dirname(os.path.abspath(__file__))
-        
+        base_path = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
+
+    # 檢查順序：根目錄 -> tools -> src
+    search_paths = [
+        base_path,
+        os.path.join(base_path, "tools"),
+        os.path.join(base_path, "src")
+    ]
+
+    for d in search_paths:
+        path = os.path.join(d, 'ffmpeg.exe')
+        if os.path.exists(path):
+            return path
+            
     return os.path.join(base_path, 'ffmpeg.exe')
 
 # 定義 FFmpeg 路徑
