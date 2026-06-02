@@ -1,0 +1,708 @@
+/* web/css/style.css */
+
+/* 全域變數定義 */
+:root {
+    --bg-color: #ECE2C4;
+    --bg-gradient-start: #F7F3E3;
+    --bg-gradient-end: #ECE2C4;
+    --primary-color: #FFC107;
+    --primary-hover: #FFA000;
+    --primary-light: #FFF3D0;
+    --text-dark: #3E2723;
+    --text-muted: #795548;
+    --accent-brown: #5D4037;
+    --accent-brown-hover: #3E2723;
+    --card-bg: #FFFFFF;
+    --card-shadow: 0 12px 40px rgba(93, 64, 55, 0.1);
+    --border-radius: 16px;
+    --transition-speed: 0.3s;
+}
+
+/* 基礎重設與字體 */
+* {
+    box-sizing: border-box;
+    margin: 0;
+    padding: 0;
+}
+
+body {
+    font-family: 'Outfit', 'Noto Sans TC', -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+    background: linear-gradient(135deg, var(--bg-gradient-start), var(--bg-gradient-end));
+    color: var(--text-dark);
+    min-height: 100vh;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    padding: 20px;
+    position: relative;
+    overflow-x: hidden;
+}
+
+/* 向日葵背景裝飾 */
+.sunflower-bg-decorator {
+    position: absolute;
+    width: 600px;
+    height: 600px;
+    background: radial-gradient(circle, rgba(255,193,7,0.15) 0%, rgba(255,255,255,0) 70%);
+    top: -200px;
+    right: -200px;
+    pointer-events: none;
+    z-index: 0;
+}
+
+/* 容器與版面佈局 */
+.app-container {
+    width: 100%;
+    max-width: 580px;
+    z-index: 1;
+    display: flex;
+    flex-direction: column;
+    gap: 16px;
+}
+
+/* 頁首標題區 */
+.app-header {
+    text-align: center;
+    position: relative;
+}
+
+.logo-icon {
+    font-size: 2.8rem;
+    animation: rotateSunflower 20s linear infinite;
+    display: inline-block;
+    margin-bottom: 4px;
+}
+
+@keyframes rotateSunflower {
+    0% { transform: rotate(0deg); }
+    100% { transform: rotate(360deg); }
+}
+
+.app-title {
+    font-size: 2rem;
+    font-weight: 800;
+    color: var(--text-dark);
+    letter-spacing: 0.5px;
+    margin-bottom: 4px;
+}
+
+.app-subtitle {
+    font-size: 0.9rem;
+    font-weight: 500;
+    color: var(--text-muted);
+}
+
+/* ==========================================
+              🌻 新增：分頁切換樣式
+========================================== */
+.tabs-nav {
+    display: flex;
+    background-color: rgba(93, 64, 55, 0.05);
+    border-radius: 12px;
+    padding: 6px;
+    gap: 4px;
+}
+
+.tab-link {
+    flex: 1;
+    padding: 12px 8px;
+    font-size: 0.95rem;
+    font-weight: 700;
+    color: var(--accent-brown);
+    background: none;
+    border: none;
+    border-radius: 8px;
+    cursor: pointer;
+    transition: all var(--transition-speed) ease;
+}
+
+.tab-link:hover {
+    background-color: rgba(255, 255, 255, 0.4);
+    color: var(--text-dark);
+}
+
+.tab-link.active {
+    background-color: var(--primary-color);
+    color: var(--text-dark);
+    box-shadow: 0 4px 10px rgba(255, 193, 7, 0.25);
+}
+
+.tab-content {
+    display: none;
+    flex-direction: column;
+    gap: 20px;
+}
+
+.tab-content.active {
+    display: flex;
+}
+
+/* 主操作卡片 */
+.main-card {
+    background-color: var(--card-bg);
+    border-radius: var(--border-radius);
+    padding: 28px;
+    box-shadow: var(--card-shadow);
+    border: 1px solid rgba(255, 255, 255, 0.6);
+    backdrop-filter: blur(10px);
+    min-height: 340px;
+}
+
+.field-label {
+    display: block;
+    font-size: 0.95rem;
+    font-weight: 700;
+    color: var(--text-dark);
+    margin-bottom: 8px;
+}
+
+/* URL 輸入框 */
+.input-group {
+    position: relative;
+}
+
+.url-input {
+    width: 100%;
+    padding: 12px 16px;
+    font-size: 0.95rem;
+    border: 2px solid #E0D6BA;
+    border-radius: 10px;
+    outline: none;
+    background-color: #FAF8F2;
+    color: var(--text-dark);
+    transition: all var(--transition-speed) ease;
+}
+
+.url-input:focus {
+    border-color: var(--primary-color);
+    background-color: #FFFFFF;
+    box-shadow: 0 0 0 4px rgba(255, 193, 7, 0.25);
+}
+
+/* 下載模式選擇卡片 */
+.mode-cards {
+    display: grid;
+    grid-template-columns: repeat(3, 1fr);
+    gap: 10px;
+}
+
+.mode-card {
+    cursor: pointer;
+    position: relative;
+}
+
+.hidden-radio {
+    position: absolute;
+    opacity: 0;
+    width: 0;
+    height: 0;
+}
+
+.card-content {
+    background-color: #FAF8F2;
+    border: 2px solid #E0D6BA;
+    border-radius: 10px;
+    padding: 14px 10px;
+    text-align: center;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 6px;
+    transition: all var(--transition-speed) ease;
+}
+
+.card-icon {
+    font-size: 1.4rem;
+}
+
+.card-title {
+    font-size: 0.85rem;
+    font-weight: 700;
+    color: var(--text-dark);
+}
+
+.card-desc {
+    font-size: 0.7rem;
+    color: var(--text-muted);
+}
+
+.mode-card:hover .card-content {
+    border-color: var(--primary-color);
+    transform: translateY(-2px);
+    background-color: #FFFDF7;
+}
+
+.hidden-radio:checked + .card-content {
+    border-color: var(--primary-color);
+    background-color: var(--primary-light);
+    box-shadow: 0 4px 12px rgba(255, 193, 7, 0.12);
+}
+
+/* ==========================================
+            🌻 新增：檔案選擇區與副按鈕
+========================================== */
+.file-select-section {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+}
+
+.file-btn {
+    padding: 10px 16px;
+    font-size: 0.9rem;
+    font-weight: 700;
+    color: #FFFFFF;
+    background-color: var(--accent-brown);
+    border: none;
+    border-radius: 8px;
+    cursor: pointer;
+    transition: all 0.2s ease;
+}
+
+.file-btn:hover {
+    background-color: var(--accent-brown-hover);
+}
+
+.filename-display {
+    font-size: 0.9rem;
+    color: var(--accent-brown);
+    font-weight: 600;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    flex: 1;
+}
+
+.secondary-btn {
+    padding: 10px 16px;
+    font-size: 0.9rem;
+    font-weight: 700;
+    color: #FFFFFF;
+    background-color: var(--accent-brown);
+    border: none;
+    border-radius: 8px;
+    cursor: pointer;
+    transition: all 0.2s ease;
+    text-align: center;
+}
+
+.secondary-btn:hover:not(:disabled) {
+    background-color: var(--accent-brown-hover);
+}
+
+.secondary-btn:disabled {
+    background-color: #E0E0E0;
+    color: #9E9E9E;
+    cursor: not-allowed;
+}
+
+/* ==========================================
+            🌻 新增：時間輸入框與下拉選單
+========================================== */
+.time-setting-section {
+    display: flex;
+    gap: 20px;
+}
+
+.time-block {
+    flex: 1;
+}
+
+.time-inputs {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    background-color: #FAF8F2;
+    border: 2px solid #E0D6BA;
+    border-radius: 8px;
+    padding: 8px;
+    gap: 4px;
+    font-weight: 800;
+}
+
+.time-input {
+    width: 40px;
+    text-align: center;
+    font-size: 1.1rem;
+    font-weight: 700;
+    border: none;
+    background: none;
+    outline: none;
+    color: var(--text-dark);
+}
+
+/* 語音辨識下拉選單與複選框 */
+.transcribe-settings {
+    display: flex;
+    flex-direction: column;
+    gap: 16px;
+}
+
+.setting-row {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+}
+
+.theme-select {
+    flex: 1;
+    padding: 10px 12px;
+    font-size: 0.9rem;
+    font-weight: 600;
+    border: 2px solid #E0D6BA;
+    border-radius: 8px;
+    background-color: #FAF8F2;
+    color: var(--text-dark);
+    outline: none;
+    cursor: pointer;
+}
+
+.theme-select:focus {
+    border-color: var(--primary-color);
+}
+
+/* 自訂 Checkbox */
+.theme-checkbox-container {
+    display: flex;
+    align-items: center;
+    position: relative;
+    padding-left: 28px;
+    cursor: pointer;
+    font-size: 0.9rem;
+    font-weight: 600;
+    user-select: none;
+}
+
+.theme-checkbox-container input {
+    position: absolute;
+    opacity: 0;
+    cursor: pointer;
+    height: 0;
+    width: 0;
+}
+
+.checkmark {
+    position: absolute;
+    top: 0;
+    left: 0;
+    height: 20px;
+    width: 20px;
+    background-color: #FAF8F2;
+    border: 2px solid #E0D6BA;
+    border-radius: 4px;
+    transition: all 0.2s ease;
+}
+
+.theme-checkbox-container:hover input ~ .checkmark {
+    border-color: var(--primary-color);
+}
+
+.theme-checkbox-container input:checked ~ .checkmark {
+    background-color: var(--primary-color);
+    border-color: var(--primary-color);
+}
+
+.checkmark:after {
+    content: "";
+    position: absolute;
+    display: none;
+}
+
+.theme-checkbox-container input:checked ~ .checkmark:after {
+    display: block;
+}
+
+.theme-checkbox-container .checkmark:after {
+    left: 6px;
+    top: 2px;
+    width: 5px;
+    height: 10px;
+    border: solid var(--text-dark);
+    border-width: 0 2px 2px 0;
+    transform: rotate(45deg);
+}
+
+/* 雙按鈕群組 */
+.result-btn-group {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 10px;
+}
+
+/* ==========================================
+                基礎 UI 項目
+========================================== */
+.action-btn {
+    width: 100%;
+    padding: 14px;
+    font-size: 1.05rem;
+    font-weight: 700;
+    color: var(--text-dark);
+    background-color: var(--primary-color);
+    border: none;
+    border-radius: 10px;
+    cursor: pointer;
+    transition: all 0.2s ease;
+    box-shadow: 0 4px 15px rgba(255, 193, 7, 0.25);
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    gap: 10px;
+}
+
+.action-btn:hover:not(:disabled) {
+    background-color: var(--primary-hover);
+    transform: translateY(-1px);
+    box-shadow: 0 6px 20px rgba(255, 193, 7, 0.35);
+}
+
+.action-btn:active:not(:disabled) {
+    transform: translateY(1px);
+}
+
+.action-btn:disabled {
+    background-color: #E0E0E0;
+    color: #9E9E9E;
+    cursor: not-allowed;
+    transform: none;
+    box-shadow: none;
+}
+
+/* 旋轉 Loader */
+.btn-loader {
+    width: 18px;
+    height: 18px;
+    border: 3px solid rgba(62, 39, 35, 0.2);
+    border-radius: 50%;
+    border-top-color: var(--text-dark);
+    animation: spin 1s ease-in-out infinite;
+}
+
+@keyframes spin {
+    to { transform: rotate(360deg); }
+}
+
+.hidden {
+    display: none !important;
+}
+
+/* 進度盒 */
+.progress-box {
+    margin-top: 20px;
+    background-color: #FAF8F2;
+    border-radius: 10px;
+    padding: 16px;
+    border: 1px dashed #E0D6BA;
+    display: flex;
+    flex-direction: column;
+    gap: 10px;
+    animation: fadeIn 0.4s ease;
+}
+
+@keyframes fadeIn {
+    from { opacity: 0; transform: translateY(10px); }
+    to { opacity: 1; transform: translateY(0); }
+}
+
+.progress-info {
+    display: flex;
+    justify-content: space-between;
+    font-size: 0.85rem;
+    font-weight: 700;
+}
+
+.status-text {
+    color: var(--text-dark);
+}
+
+.percent-text {
+    color: var(--accent-brown);
+}
+
+/* 進度條背景與填滿 */
+.progress-bar-bg {
+    width: 100%;
+    height: 8px;
+    background-color: #E0D6BA;
+    border-radius: 4px;
+    overflow: hidden;
+}
+
+.progress-bar-fill {
+    height: 100%;
+    background: linear-gradient(90deg, var(--primary-color), #FF8F00);
+    border-radius: 4px;
+    transition: width 0.15s ease-out;
+}
+
+.progress-meta {
+    display: flex;
+    justify-content: space-between;
+    font-size: 0.75rem;
+    color: var(--text-muted);
+}
+
+/* 頁尾 */
+.app-footer {
+    text-align: center;
+    font-size: 0.8rem;
+    color: var(--text-muted);
+}
+
+.status-ready {
+    color: #4CAF50;
+    font-weight: 700;
+}
+
+/* ==========================================
+            🌻 心跳燈號與連線狀態樣式
+========================================== */
+.connection-status {
+    position: absolute;
+    top: 0px;
+    right: 0px;
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    background-color: rgba(255, 255, 255, 0.7);
+    padding: 6px 12px;
+    border-radius: 20px;
+    border: 1px solid rgba(93, 64, 55, 0.1);
+    box-shadow: 0 2px 8px rgba(93, 64, 55, 0.05);
+}
+
+.lamp {
+    width: 8px;
+    height: 8px;
+    border-radius: 50%;
+    display: inline-block;
+    transition: all 0.3s ease;
+}
+
+.lamp.offline {
+    background-color: #F44336;
+    box-shadow: 0 0 8px #F44336;
+    animation: pulseRed 2s infinite;
+}
+
+.lamp.online {
+    background-color: #4CAF50;
+    box-shadow: 0 0 8px #4CAF50;
+    animation: pulseGreen 2s infinite;
+}
+
+.lamp.updating {
+    background-color: #FFC107;
+    box-shadow: 0 0 8px #FFC107;
+    animation: pulseYellow 2s infinite;
+}
+
+.status-label {
+    font-size: 0.75rem;
+    font-weight: 700;
+    color: var(--text-dark);
+}
+
+@keyframes pulseRed {
+    0% { box-shadow: 0 0 0 0 rgba(244, 67, 54, 0.7); }
+    70% { box-shadow: 0 0 0 6px rgba(244, 67, 54, 0); }
+    100% { box-shadow: 0 0 0 0 rgba(244, 67, 54, 0); }
+}
+
+@keyframes pulseGreen {
+    0% { box-shadow: 0 0 0 0 rgba(76, 175, 80, 0.7); }
+    70% { box-shadow: 0 0 0 6px rgba(76, 175, 80, 0); }
+    100% { box-shadow: 0 0 0 0 rgba(76, 175, 80, 0); }
+}
+
+@keyframes pulseYellow {
+    0% { box-shadow: 0 0 0 0 rgba(255, 193, 7, 0.7); }
+    70% { box-shadow: 0 0 0 6px rgba(255, 193, 7, 0); }
+    100% { box-shadow: 0 0 0 0 rgba(255, 193, 7, 0); }
+}
+
+/* ==========================================
+            🌻 啟動下載 Loading 遮罩樣式
+========================================== */
+.startup-overlay {
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100vw;
+    height: 100vh;
+    background-color: rgba(62, 39, 35, 0.5); /* 褐色磨砂玻璃 */
+    backdrop-filter: blur(10px);
+    z-index: 9999;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    padding: 20px;
+    animation: fadeIn 0.3s ease;
+}
+
+.overlay-card {
+    background-color: var(--card-bg);
+    width: 100%;
+    max-width: 480px;
+    border-radius: var(--border-radius);
+    padding: 36px;
+    box-shadow: 0 20px 50px rgba(93, 64, 55, 0.25);
+    text-align: center;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 16px;
+    border: 1px solid rgba(255, 255, 255, 0.5);
+}
+
+.overlay-logo {
+    font-size: 3.5rem;
+    animation: rotateSunflower 15s linear infinite;
+    display: inline-block;
+}
+
+.overlay-title {
+    font-size: 1.4rem;
+    font-weight: 800;
+    color: var(--text-dark);
+}
+
+.overlay-status {
+    font-size: 0.95rem;
+    color: var(--text-muted);
+    font-weight: 600;
+}
+
+.overlay-progress-bg {
+    width: 100%;
+    height: 12px;
+    background-color: #E0D6BA;
+    border-radius: 6px;
+    overflow: hidden;
+    margin-top: 8px;
+}
+
+.overlay-progress-bar {
+    height: 100%;
+    background: linear-gradient(90deg, var(--primary-color), #FF8F00);
+    border-radius: 6px;
+    transition: width 0.2s ease-out;
+    width: 0%;
+}
+
+.overlay-percent {
+    font-size: 1.2rem;
+    font-weight: 800;
+    color: var(--accent-brown);
+}
+
+.overlay-note {
+    font-size: 0.75rem;
+    line-height: 1.5;
+    color: #8D6E63;
+    background-color: #FAF8F2;
+    padding: 12px;
+    border-radius: 8px;
+    border: 1px solid rgba(224, 214, 186, 0.5);
+    text-align: left;
+}

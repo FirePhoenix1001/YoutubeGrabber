@@ -7,16 +7,7 @@ block_cipher = None
 # 取得目前目錄
 project_dir = os.path.abspath(os.getcwd())
 
-# 找出 customtkinter 的路徑 (用於打包其資源檔)
-# 這裡嘗試從 site-packages 中找出
-try:
-    import customtkinter
-    ctk_path = os.path.dirname(customtkinter.__file__)
-    ctk_data = (ctk_path, 'customtkinter')
-except ImportError:
-    ctk_data = None
-
-# 找出 opencc 的路徑
+# 找出 opencc 的路徑 (用於簡繁轉換資源)
 try:
     import opencc
     opencc_path = os.path.dirname(opencc.__file__)
@@ -24,13 +15,13 @@ try:
 except ImportError:
     opencc_data = None
 
+# 定義要打包的資源
+# 1. 為了實現「極致前後端分離」，web 前端目錄不打包進 exe。使用者可直接開啟外部的 web/index.html
+# 2. tools 資料夾改為動態下載，因此亦不進行靜態打包
 datas = [
     ('sunflower.ico', '.'),
-    ('tools', 'tools'),
 ]
 
-if ctk_data:
-    datas.append(ctk_data)
 if opencc_data:
     datas.append(opencc_data)
 
@@ -42,14 +33,14 @@ a = Analysis(
     hiddenimports=[
         'faster_whisper',
         'opencc',
-        'customtkinter',
         'yt_dlp',
-        'PIL.ImageResampling' # customtkinter 可能需要
+        'flask',
+        'flask_cors'
     ],
     hookspath=[],
     hooksconfig={},
     runtime_hooks=[],
-    excludes=[],
+    excludes=['customtkinter', 'PIL', 'eel', 'bottle', 'gevent'], # 排除未使用的 Eel、Tkinter 桌面與圖片套件以極致優化體積
     win_no_prefer_redirects=False,
     win_private_assemblies=False,
     cipher=block_cipher,
@@ -72,7 +63,7 @@ exe = EXE(
     upx=True,
     upx_exclude=[],
     runtime_tmpdir=None,
-    console=False,
+    console=False, # 打包發行版本隱藏後台主控台視窗 (Eel 被 Flask 取代，網頁將自動彈出)
     disable_windowed_traceback=False,
     argv_emulation=False,
     target_arch=None,

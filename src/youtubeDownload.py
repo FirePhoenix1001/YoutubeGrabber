@@ -1,28 +1,9 @@
 import os
 import sys
 import yt_dlp
+import updater
 
-def get_tool_path(filename):
-    """
-    採用 BASE_PATH 邏輯：檢查順序為 根目錄 -> tools 資料夾
-    """
-    IS_BUNDLE = hasattr(sys, '_MEIPASS')
-    BASE_PATH = sys._MEIPASS if IS_BUNDLE else os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
-    
-    # 檢查位置清單
-    search_paths = [
-        BASE_PATH,
-        os.path.join(BASE_PATH, "tools"),
-        os.path.join(BASE_PATH, "src")
-    ]
-    
-    for d in search_paths:
-        path = os.path.join(d, filename)
-        if os.path.exists(path):
-            return path
-    return os.path.join(BASE_PATH, filename)
-
-FFMPEG_PATH = get_tool_path('ffmpeg.exe')
+FFMPEG_PATH = os.path.join(updater.TOOLS_DIR, 'ffmpeg.exe')
 
 # ★ 新增：建立一個安靜的 Logger，防止系統訊息亂噴
 class MyLogger:
