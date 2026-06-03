@@ -1,0 +1,298 @@
+<!DOCTYPE html>
+<html lang="zh-Hant">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Youtube 擷取工具</title>
+    <!-- Google Fonts -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link
+        href="https://fonts.googleapis.com/css2?family=Fira+Code:wght@400;600&family=Inter:wght@300;400;600;800&family=Outfit:wght@300;400;600;800&family=Playfair+Display:ital,wght@0,400;0,700;1,400&family=Space+Grotesk:wght@400;600;700&display=swap"
+        rel="stylesheet">
+    <!-- FontAwesome Icons -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <link rel="stylesheet" href="style.css">
+</head>
+
+<body class="theme-dark">
+    <div class="app-layout">
+        <!-- Sidebar Navigation -->
+        <aside class="sidebar">
+            <div class="brand-area">
+                <div class="logo-sunflower"><i class="fa-solid fa-sun"></i></div>
+                <div class="brand-text">
+                    <h2>YoutubeGrabber <span id="connection-dot" class="connection-dot disconnected"
+                            title="與後端服務中斷連線..."></span></h2>
+                </div>
+            </div>
+
+            <!-- Tab Buttons -->
+            <nav class="nav-tabs">
+                <button class="nav-tab active" data-tab="tab-download">
+                    <i class="fa-solid fa-cloud-arrow-down"></i> 下載 YouTube
+                </button>
+                <button class="nav-tab" data-tab="tab-cut">
+                    <i class="fa-solid fa-scissors"></i> 本地剪輯
+                </button>
+                <button class="nav-tab" data-tab="tab-transcribe">
+                    <i class="fa-solid fa-microphone-lines"></i> 語音辨識
+                </button>
+                <button class="nav-tab" data-tab="tab-files">
+                    <i class="fa-solid fa-folder-open"></i> 檔案管理
+                </button>
+            </nav>
+
+            <div class="sidebar-footer">
+                <button id="theme-toggle-btn" class="theme-toggle-btn" title="切換深淺色模式">
+                    <i class="fa-solid fa-moon"></i> <span>深色模式</span>
+                </button>
+                <button id="clean-env-btn" class="theme-toggle-btn uninstall-btn"
+                    style="border-color: rgba(239, 83, 80, 0.25); color: #ef5350;" title="清空本機所有下載的核心組件">
+                    <i class="fa-solid fa-broom"></i> <span>一鍵清空組件</span>
+                </button>
+                <button id="open-workspace-btn" class="workspace-btn">
+                    <i class="fa-solid fa-folder"></i> 開啟程式資料夾
+                </button>
+            </div>
+        </aside>
+
+        <!-- Main Display Panel -->
+        <main class="main-content">
+            <!-- Dependency Alert Banner -->
+            <div id="dependency-banner" class="dependency-banner hide">
+                <div class="banner-content">
+                    <span class="banner-icon"><i class="fa-solid fa-triangle-exclamation"></i></span>
+                    <div class="banner-text">
+                        <h3>偵測到缺少必要核心組件 (FFmpeg & FFprobe & YTDLP)</h3>
+                    </div>
+                </div>
+                <button id="install-tools-btn" class="install-banner-btn">
+                    <i class="fa-solid fa-cloud-arrow-down"></i> 一鍵自動安裝
+                </button>
+            </div>
+
+            <!-- Connection Alert Banner -->
+            <div id="connection-banner" class="connection-banner hide">
+                <div class="banner-content">
+                    <span class="banner-icon"><i class="fa-solid fa-circle-exclamation"></i></span>
+                    <div class="banner-text">
+                        <h3>未連線至背景伺服器</h3>
+                        <p>無法讀取本地檔案或執行下載/剪輯/語音辨識。請確保已經雙擊執行了本機的 <strong>SunflowerLauncher.exe</strong> 啟動器。</p>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Tabs Contents -->
+            <div class="tab-contents">
+
+                <!-- 1. YouTube Download Tab -->
+                <div id="tab-download" class="tab-pane active">
+                    <div class="pane-header">
+                        <h2>📥 下載 YouTube 影片/音訊</h2>
+                    </div>
+
+                    <div class="form-container">
+                        <div class="input-group">
+                            <label for="download-url"><i class="fa-brands fa-youtube"></i> 影片網址 (URL)</label>
+                            <input type="url" id="download-url"
+                                placeholder="請在此貼上 YouTube 影片網址 (例如 https://www.youtube.com/watch?v=...)" required>
+                        </div>
+
+                        <div class="input-group">
+                            <label><i class="fa-solid fa-sliders"></i> 下載模式</label>
+                            <div class="mode-selectors">
+                                <label class="mode-card">
+                                    <input type="radio" name="download-mode" value="1">
+                                    <div class="mode-card-content">
+                                        <i class="fa-solid fa-video"></i>
+                                        <span>僅影片 (Video)</span>
+                                    </div>
+                                </label>
+                                <label class="mode-card">
+                                    <input type="radio" name="download-mode" value="2">
+                                    <div class="mode-card-content">
+                                        <i class="fa-solid fa-music"></i>
+                                        <span>僅聲音 (Audio/MP3)</span>
+                                    </div>
+                                </label>
+                                <label class="mode-card active">
+                                    <input type="radio" name="download-mode" value="3" checked>
+                                    <div class="mode-card-content">
+                                        <i class="fa-solid fa-film"></i>
+                                        <span>影音合併 (Recommended)</span>
+                                    </div>
+                                </label>
+                            </div>
+                        </div>
+
+                        <button id="start-download-btn" class="action-btn btn-yellow">
+                            <i class="fa-solid fa-download"></i> 開始下載任務
+                        </button>
+                    </div>
+                </div>
+
+                <!-- 2. Local Media Cut Tab -->
+                <div id="tab-cut" class="tab-pane">
+                    <div class="pane-header">
+                        <h2>✂️ 快速剪輯</h2>
+                    </div>
+
+                    <div class="form-container">
+                        <div class="input-group">
+                            <label for="cut-file-path"><i class="fa-solid fa-file-video"></i> 本地檔案絕對路徑</label>
+                            <div class="path-input-wrapper">
+                                <input type="text" id="cut-file-path"
+                                    placeholder="請輸入本機檔案路徑 (例如 C:\Videos\test.mp4) 或從檔案管理中點選 / 直接拖曳檔案至此">
+                                <button id="browse-cut-btn" class="browse-btn" type="button" title="選擇本地檔案"><i
+                                        class="fa-solid fa-folder-open"></i> 瀏覽檔案</button>
+                            </div>
+                        </div>
+
+                        <!-- Time inputs -->
+                        <div class="time-range-group">
+                            <div class="time-box">
+                                <span class="time-title"><i class="fa-solid fa-play"></i> 開始時間</span>
+                                <div class="time-inputs">
+                                    <input type="number" id="start-h" min="0" max="99" value="0" placeholder="時">
+                                    <span class="colon">:</span>
+                                    <input type="number" id="start-m" min="0" max="59" value="0" placeholder="分">
+                                    <span class="colon">:</span>
+                                    <input type="number" id="start-s" min="0" max="59" value="0" placeholder="秒">
+                                </div>
+                            </div>
+
+                            <div class="time-box">
+                                <span class="time-title"><i class="fa-solid fa-stop"></i> 結束時間</span>
+                                <div class="time-inputs">
+                                    <input type="number" id="end-h" min="0" max="99" value="0" placeholder="時">
+                                    <span class="colon">:</span>
+                                    <input type="number" id="end-m" min="0" max="59" value="0" placeholder="分">
+                                    <span class="colon">:</span>
+                                    <input type="number" id="end-s" min="0" max="10" placeholder="秒">
+                                </div>
+                            </div>
+                        </div>
+
+                        <button id="start-cut-btn" class="action-btn btn-yellow">
+                            <i class="fa-solid fa-scissors"></i> 執行 FFmpeg 剪輯
+                        </button>
+                    </div>
+                </div>
+
+                <!-- 3. Audio Transcriber (Whisper) Tab -->
+                <div id="tab-transcribe" class="tab-pane">
+                    <div class="pane-header">
+                        <h2>🎤 AI 語音辨識</h2>
+                    </div>
+
+                    <div class="form-container">
+                        <div class="input-group">
+                            <label for="transcribe-file-path"><i class="fa-solid fa-file-audio"></i> 本地檔案絕對路徑</label>
+                            <div class="path-input-wrapper">
+                                <input type="text" id="transcribe-file-path"
+                                    placeholder="請輸入本機檔案路徑 (例如 C:\Videos\test.mp3) 或從檔案管理中點選 / 直接拖曳檔案至此">
+                                <button id="browse-transcribe-btn" class="browse-btn" type="button" title="選擇本地檔案"><i
+                                        class="fa-solid fa-folder-open"></i> 瀏覽檔案</button>
+                            </div>
+                        </div>
+
+                        <div class="form-row">
+                            <div class="input-group half">
+                                <label for="whisper-model-select"><i class="fa-solid fa-brain"></i> 語音模型大小</label>
+                                <select id="whisper-model-select">
+                                    <option value="tiny">Tiny (極快/低準度)</option>
+                                    <option value="base">Base (快速/中低準度)</option>
+                                    <option value="small">Small (平衡/中等準度)</option>
+                                    <option value="medium">Medium (慢/高準度)</option>
+                                    <option value="large-v3" selected>Large-V3 (極慢/最高準度)</option>
+                                </select>
+                            </div>
+
+                            <div class="input-group half align-bottom">
+                                <label class="custom-checkbox">
+                                    <input type="checkbox" id="show-timestamps-check" checked>
+                                    <span class="checkmark"></span>
+                                    輸出中包含時間戳記
+                                </label>
+                            </div>
+                        </div>
+
+                        <button id="start-transcribe-btn" class="action-btn btn-yellow">
+                            <i class="fa-solid fa-microphone-lines"></i> 開始 Whisper 文字辨識
+                        </button>
+                    </div>
+                </div>
+
+                <!-- 4. File Manager Tab -->
+                <div id="tab-files" class="tab-pane">
+                    <div class="pane-header">
+                        <h2>📂 下載與輸出檔案管理</h2>
+                    </div>
+
+                    <div class="files-table-container">
+                        <table id="files-table" class="files-table">
+                            <thead>
+                                <tr>
+                                    <th>檔案名稱</th>
+                                    <th>大小 (MB)</th>
+                                    <th>檔案類型</th>
+                                    <th class="actions-header">快速操作</th>
+                                </tr>
+                            </thead>
+                            <tbody id="files-list-body">
+                                <!-- Dynamic File Items -->
+                                <tr>
+                                    <td colspan="4" class="empty-message">正在載入本地檔案清單...</td>
+                                </tr>
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+
+            </div>
+
+            <!-- Execution Status & Progress (Sticky bottom-middle area) -->
+            <div id="progress-container" class="progress-container hide">
+                <div class="progress-details">
+                    <span id="progress-task-name"><i class="fa-solid fa-spinner fa-spin"></i> 正在執行任務...</span>
+                    <span id="progress-percentage">0%</span>
+                </div>
+                <div class="progress-bar-bg">
+                    <div id="progress-bar-fill" class="progress-bar-fill" style="width: 0%"></div>
+                </div>
+            </div>
+
+            <!-- System Terminal Logger -->
+            <footer class="system-logs-panel">
+                <div class="logs-header">
+                    <h3><i class="fa-solid fa-terminal"></i> 系統即時日誌 (System Logs)</h3>
+                    <button id="clear-logs-btn" class="clear-btn" title="清除終端機日誌">
+                        <i class="fa-solid fa-trash-can"></i> 清空日誌
+                    </button>
+                </div>
+                <div id="terminal-console" class="terminal-console">
+                    <div class="log-line system-line">[SYSTEM] 向日葵日誌終端機已就緒。</div>
+                </div>
+            </footer>
+        </main>
+    </div>
+
+    <!-- Media Preview Modal (for video/audio playing) -->
+    <div id="media-modal" class="modal">
+        <div class="modal-content">
+            <span class="modal-close">&times;</span>
+            <h3 id="modal-title">媒體播放器</h3>
+            <div class="modal-body">
+                <!-- HTML5 video/audio player served dynamically or standard container -->
+                <div id="media-player-container"></div>
+            </div>
+        </div>
+    </div>
+
+    <!-- JavaScript Controller -->
+    <script src="app.js"></script>
+</body>
+
+</html>

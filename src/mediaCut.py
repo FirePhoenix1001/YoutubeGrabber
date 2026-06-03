@@ -1,10 +1,29 @@
 import os
 import sys
 import subprocess
-import updater
 
-# 定義 FFmpeg 路徑
-FFMPEG_PATH = os.path.join(updater.TOOLS_DIR, 'ffmpeg.exe')
+# 1. 為了讓剪輯功能也能獨立運作，我們同樣需要這個路徑偵測函式
+def get_ffmpeg_path():
+    if getattr(sys, 'frozen', False):
+        base_path = sys._MEIPASS
+    else:
+        base_path = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
+
+    # 檢查順序：根目錄 -> tools -> src -> CWD -> CWD/tools
+    search_paths = [
+        base_path,
+        os.path.join(base_path, "tools"),
+        os.path.join(base_path, "src"),
+        os.getcwd(),
+        os.path.join(os.getcwd(), "tools")
+    ]
+
+    for d in search_paths:
+        path = os.path.join(d, 'ffmpeg.exe')
+        if os.path.exists(path):
+            return path
+            
+    return os.path.join(base_path, 'ffmpeg.exe')
 
 def cut_video(input_path, start_time, end_time):
     """
@@ -16,7 +35,8 @@ def cut_video(input_path, start_time, end_time):
     """
     
     # 檢查 FFmpeg 是否存在
-    if not os.path.exists(FFMPEG_PATH):
+    ffmpeg_path = get_ffmpeg_path()
+    if not os.path.exists(ffmpeg_path):
         return False, "找不到 ffmpeg.exe，請確認檔案位置。"
 
     # 檢查來源檔案是否存在
@@ -36,7 +56,7 @@ def cut_video(input_path, start_time, end_time):
     # -c copy: 關鍵參數！直接複製資料流，不重新編碼 (速度極快)
     # -y: 若輸出檔案已存在，直接覆蓋不詢問
     command = [
-        FFMPEG_PATH, 
+        ffmpeg_path, 
         "-i", input_path,
         "-ss", start_time,
         "-to", end_time,
