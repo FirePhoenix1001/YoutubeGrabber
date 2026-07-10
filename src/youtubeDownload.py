@@ -59,7 +59,7 @@ def download_video(url, mode, progress_callback=None):
         "remote_components": ["ejs:github"], # 實現核心腳本自動更新
         "extractor_args": {
             "youtube": {
-                "player_client": ["default", "-android_sdkless"]
+                "player_client": ["web", "ios", "android", "mweb"]
             }
         },
         "overwrites": True, 
@@ -67,7 +67,7 @@ def download_video(url, mode, progress_callback=None):
 
     if mode == "1": # 僅影像
         ydl_opts["outtmpl"] = "./%(title)s_video.%(ext)s"
-        ydl_opts["format"] = "bestvideo"
+        ydl_opts["format"] = "bestvideo/best"
     elif mode == "2": # 僅聲音
         ydl_opts["outtmpl"] = "./%(title)s_audio.%(ext)s"
         ydl_opts["format"] = "bestaudio/best"

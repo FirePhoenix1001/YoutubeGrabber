@@ -342,7 +342,11 @@ class App(ctk.CTk):
         except Exception as e:
             # 簡化錯誤訊息，對一般使用者更友善
             print(f"詳細錯誤資訊: {e}")
-            msg = "下載失敗！\n\n可能原因：\n1. 影片網址錯誤\n2. 影片受限制(如私人影片)\n3. 網路連線不穩定\n\n系統已嘗試自動更新組件，請再試一次。"
+            err_msg = str(e)
+            if "not available" in err_msg.lower() or "requested format" in err_msg.lower():
+                msg = f"下載失敗！\n\n出現 [{err_msg}]，請通知開發者更新yt-dlp。"
+            else:
+                msg = f"下載失敗！\n\n可能原因：\n1. 影片網址錯誤\n2. 影片受限制(如私人影片)\n3. 網路連線不穩定\n\n系統已嘗試自動更新組件，請再試一次。\n\n詳細錯誤資訊：{err_msg}"
             messagebox.showerror("下載發生問題", msg)
 
     def update_progress(self, val):
